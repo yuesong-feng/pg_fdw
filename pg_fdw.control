@@ -1,0 +1,5 @@
+# pg_fdw extension
+comment = 'PostgreSQL fdw example'
+default_version = '1.0'
+module_pathname = '$libdir/pg_fdw'
+relocatable = true

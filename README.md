@@ -1,1 +1,1 @@
-# pg_storage
+# pg_fdw
