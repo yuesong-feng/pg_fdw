@@ -21,6 +21,11 @@ typedef struct FdwExecutionState
 {
 } FdwExecutionState;
 
+typedef struct FdwModifyState
+{
+
+} FdwModifyState;
+
 /*
  * FDW callback routines
  */
@@ -48,7 +53,7 @@ static List *fdwPlanForeignModify(PlannerInfo *root,
                                   Index resultRelation,
                                   int subplan_index);
 static void fdwBeginForeignModify(ModifyTableState *mtstate,
-                                  ResultRelInfo *resultRelInfo,
+                                  ResultRelInfo *rinfo,
                                   List *fdw_private,
                                   int subplan_index,
                                   int eflags);
@@ -100,7 +105,7 @@ static void fdwGetForeignRelSize(PlannerInfo *root, RelOptInfo *baserel,
     fdw_private = (FdwPlanState *)palloc0(sizeof(FdwPlanState));
     baserel->fdw_private = (void *)fdw_private;
 
-    baserel->rows = 100;
+    baserel->rows = 1;
 }
 
 /*
@@ -120,8 +125,8 @@ static void fdwGetForeignPaths(PlannerInfo *root,
                                                       baserel->rows,
                                                       startup_cost,
                                                       total_cost,
-                                                      NIL, /* no pathkeys */
-                                                      baserel->lateral_relids,
+                                                      NIL,   /* no pathkeys */
+                                                      NULL,  /* no outer rel either */
                                                       NULL,  /* no extra plan */
                                                       NIL)); /* no fdw_private list */
 }
@@ -233,21 +238,26 @@ static List *fdwPlanForeignModify(PlannerInfo *root,
  *		Begin an insert/update/delete operation on a foreign table
  */
 static void fdwBeginForeignModify(ModifyTableState *mtstate,
-                                  ResultRelInfo *resultRelInfo,
+                                  ResultRelInfo *rinfo,
                                   List *fdw_private,
                                   int subplan_index,
-                                  int eflags) {}
+                                  int eflags)
+{
+    FdwModifyState *fmstate = (FdwModifyState *)palloc0(sizeof(FdwModifyState));
+    rinfo->ri_FdwState = (void *)fmstate;
+}
 
 /*
  * fdwExecForeignInsert
  *		Insert one row into a foreign table
  */
 static TupleTableSlot *fdwExecForeignInsert(EState *estate,
-                                            ResultRelInfo *resultRelInfo,
+                                            ResultRelInfo *rinfo,
                                             TupleTableSlot *slot,
                                             TupleTableSlot *planSlot)
 {
-    return NULL;
+    FdwModifyState *fmstate = (FdwModifyState *)rinfo->ri_FdwState;
+    return slot;
 }
 
 /*
@@ -255,4 +265,7 @@ static TupleTableSlot *fdwExecForeignInsert(EState *estate,
  *		Finish an insert/update/delete operation on a foreign table
  */
 static void fdwEndForeignModify(EState *estate,
-                                ResultRelInfo *resultRelInfo) {}
+                                ResultRelInfo *rinfo)
+{
+    FdwModifyState *fmstate = (FdwModifyState *)rinfo->ri_FdwState;
+}

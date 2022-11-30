@@ -19,7 +19,7 @@ typedef struct FdwOption
 /*
  * Valid options.
  */
-static const struct FdwOption valid_options[] = {
+static const FdwOption valid_options[] = {
     {"db", ForeignTableRelationId},
     {"option2", ForeignTableRelationId},
     {"allow", ForeignTableRelationId},
